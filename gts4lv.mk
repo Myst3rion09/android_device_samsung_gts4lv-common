@@ -246,6 +246,12 @@ PRODUCT_PACKAGES += \
     libjson \
     libtinyxml
 
+# QTI common
+TARGET_COMMON_QTI_COMPONENTS := \
+    av \
+    bt \
+    perf
+
 # Recovery
 PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/recovery/root/init.recovery.qcom.rc:root/init.recovery.qcom.rc
