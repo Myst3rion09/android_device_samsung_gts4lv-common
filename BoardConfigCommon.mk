@@ -155,7 +155,6 @@ BOARD_ROOT_EXTRA_SYMLINKS := \
 VENDOR_SECURITY_PATCH := 2018-08-05
 
 # SELinux
-include device/qcom/sepolicy/sepolicy.mk
 BOARD_SEPOLICY_DIRS += $(COMMON_PATH)/sepolicy/vendor
 
 # Wifi
