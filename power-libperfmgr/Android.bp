@@ -17,7 +17,6 @@ cc_library {
     name: "libdisppower-gts4lv",
     proprietary: true,
     srcs: [
-        "disp-power/DisplayLowPower.cpp",
         "disp-power/InteractionHandler.cpp",
     ],
      shared_libs: [
@@ -82,5 +81,9 @@ cc_binary {
         "aidl/service.cpp",
         "aidl/Power.cpp",
         "aidl/PowerExt.cpp",
+    ],
+    header_libs: [
+        "libhardware_headers",
+        "generated_kernel_headers",
     ],
 }
