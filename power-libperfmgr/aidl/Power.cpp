@@ -44,6 +44,7 @@ constexpr char kPowerHalRenderingProp[] = "vendor.powerhal.rendering";
 Power::Power(std::shared_ptr<HintManager> hm)
     : mHintManager(hm),
       mInteractionHandler(nullptr),
+      mDoubleTapEnabled(false),
       mSustainedPerfModeOn(false) {
     mInteractionHandler = std::make_unique<InteractionHandler>(mHintManager);
     mInteractionHandler->Init();
@@ -71,6 +72,18 @@ Power::Power(std::shared_ptr<HintManager> hm)
 
     // Now start to take powerhint
     ALOGI("PowerHAL ready to process hints");
+
+    updateHint("DOUBLE_TAP_TO_WAKE", mDoubleTapEnabled);
+}
+
+ndk::ScopedAStatus Power::updateHint(const char *hint, bool enable) {
+    if (enable) {
+        mHintManager->DoHint(hint);
+    } else {
+        mHintManager->EndHint(hint);
+    }
+
+    return ndk::ScopedAStatus::ok();
 }
 
 ndk::ScopedAStatus Power::setMode(Mode type, bool enabled) {
@@ -85,12 +98,14 @@ ndk::ScopedAStatus Power::setMode(Mode type, bool enabled) {
                 mSustainedPerfModeOn = true;
             }
             break;
+        case Mode::DOUBLE_TAP_TO_WAKE:
+            mDoubleTapEnabled = enabled;
+            updateHint("DOUBLE_TAP_TO_WAKE", enabled);
+            break;       
         case Mode::LAUNCH:
             if (mSustainedPerfModeOn) {
                 break;
             }
-            [[fallthrough]];
-        case Mode::DOUBLE_TAP_TO_WAKE:
             [[fallthrough]];
         case Mode::FIXED_PERFORMANCE:
             [[fallthrough]];
@@ -118,9 +133,15 @@ ndk::ScopedAStatus Power::setMode(Mode type, bool enabled) {
 
 ndk::ScopedAStatus Power::isModeSupported(Mode type, bool *_aidl_return) {
     bool supported = mHintManager->IsHintSupported(toString(type));
-    // LOW_POWER handled insides PowerHAL specifically
-    if (type == Mode::LOW_POWER) {
-        supported = true;
+    switch (type) {
+        case Mode::LOW_POWER: // LOW_POWER handled insides PowerHAL specifically
+            supported = true;
+            break;
+        case Mode::DOUBLE_TAP_TO_WAKE:
+            supported = true;
+            break;
+        default:
+            break;
     }
     LOG(INFO) << "Power mode " << toString(type) << " isModeSupported: " << supported;
     *_aidl_return = supported;
